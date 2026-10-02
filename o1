@@ -1,0 +1,69 @@
+# Informe de estado del proyecto
+
+**Nombre del Proyecto:** DistriRapido - Sistema de Gestión de Distribución y Entregas Rápidas / EcoLogística Huancayo
+**Producto:** Plataforma web con Algoritmo Genético para optimizar rutas sostenibles de última milla en Huancayo
+**Líder del Proyecto:** Flores Toribio, Ricardo Miguel
+**Equipo:** Flores Toribio, Ricardo Miguel; Janampa Navarro, Clinton; Rupay Chira, Rosalyn Exkra; Veliz de la Cruz, Carlos Adrian
+**Sprint:** Sprint 1
+**Periodo:** 2026-09-04 al 2026-10-01
+**Versión:** V_1_0_0
+**Fecha:** 2026-10-02
+
+[Volver al README principal](../../README.md)
+
+## 1. Objetivo del Sprint 1
+
+Implementar la base funcional de acceso y operación mínima: autenticación, administración de cuentas y registro de pedidos, con infraestructura Docker, PostgreSQL + Prisma y trazabilidad a RF-001, RF-002, RF-003.
+
+## 2. Alcance planificado vs ejecutado
+
+| HU / Incremento | RF asociado | Estado | Evidencia |
+|---|---|---|---|
+| US-001 Infraestructura y login email/contraseña | RF-001 | Completada y validada manualmente | `implementation/US-001.md`, `POST /auth/login`, `docker-compose.yml` |
+| US-002 Persistencia sesión cookie HttpOnly, `/auth/me`, `/auth/logout` | RF-001 | Completada y validada manualmente | `implementation/US-002.md`, cookie `distrirapido_session_v2` Path=/ |
+| US-003 Administrar usuarios y roles | RF-002 | Completada y validada manualmente | `implementation/US-003.md`, `GET/POST /users`, `GET/PATCH /users/:id`, `GET /roles`, `/usuarios` |
+| US-004 Registrar pedido con cliente/destino mínimo | RF-003 | Implementada, pruebas automáticas aprobadas, validación manual final pendiente | `implementation/US-004.md`, `POST /orders`, `/pedidos/nuevo`, migración `202610010002_us004_registrar_pedidos` |
+| US-005 | RF-004 | No iniciada | Pendiente Sprint 2 |
+
+Avance funcional del MVP total (21 RF): ~14% (3/21 RF completos). Avance Sprint 1: ~90% (3.5/4 HU).
+
+## 3. Historias de Usuario completadas en este Sprint
+
+- **US-001:** Backend NestJS + Frontend React + Postgres 16 Docker en puerto 5433, JWT + Argon2id, bootstrap admin con `BOOTSTRAP_ADMIN_EMAIL/PASSWORD`, Swagger `/api/docs`.
+- **US-002:** Cookie HttpOnly `SameSite=Lax`, restauración F5 con `GET /auth/me`, migración cookie v1 a v2 sin renovar JWT, logout `204` que limpia cookie, sin `localStorage` para tokens.
+- **US-003:** Solo `Administrador` lista/crea/edita `email, rol_id, estado ACTIVO/INACTIVO/BLOQUEADO`. 4 roles línea base: Administrador, Operador/Técnico, Usuario Final/Conductor, Auditor Externo. Sin DELETE físico, sin CRUD roles. 89 tests backend + 54 frontend + 28 integración + 7 E2E OK, cobertura backend 100%, frontend 97.47%.
+- **US-004 (parcial):** Transacción Cliente mínimo + Pedido, validaciones peso>0, volumen>0, `ventana_fin>ventana_inicio` ISO8601 UTC, `prioridad EXPRESS/ESTANDAR/ECONOMICO`, `tipo PERECEDERO/NO_PERECEDERO`, estado `PENDIENTE`. Autoriza Administrador y Operador/Técnico por decisión explícita. 121 tests backend + 82 frontend + 63 integración + 14 E2E OK.
+
+## 4. Demostración del trabajo completado
+
+Demostración a los stakeholders de las funcionalidades implementadas:
+
+1. `docker compose up -d postgres` + `npm run start:dev` / `npm run dev`, login admin en `http://localhost:5173/login`.
+2. Crear usuario nuevo en `/usuarios/nuevo`, duplicado devuelve `409`, F5 conserva sesión, logout redirige a `/login` y bloquea `/usuarios` directo.
+3. Registrar pedido en `/pedidos/nuevo` con `Prueba manual US-004 / Destino Huancayo / -12.065,-75.204 / 2.5kg / 0.015m3`, respuesta `201` con `pedido_id` UUID y estado Pendiente, verificado en Swagger `http://localhost:3000/api/docs`.
+
+## 5. Indicadores
+
+- TypeScript + Lint + Build: OK en ambos proyectos.
+- `npm audit --audit-level=high`: 0 vulnerabilidades.
+- `prisma validate/generate/deploy/status`: OK, `Database schema is up to date!`.
+- Cuentas originales `admin@distrirapido.local` y `operador.prueba@distrirapido.local` íntegras antes/después migración.
+
+## 6. Pendientes
+
+- Validación manual final US-004 pasos 1-11 de `implementation/US-004.md` (navegación/formulario con admin y operador, 401/403 con Conductor/Auditor).
+- US-005 Consultar y gestionar pedidos (RF-004) no iniciada.
+- Módulos RF-005 a RF-021: vehículos, conductores, disponibilidad, planificación, Algoritmo Genético, mapas, asignación, PWA conductor, incidencias, indicadores.
+- No se probó despliegue HTTPS ni `docker compose up --build -d` completo.
+
+## 7. Riesgos y decisiones
+
+- Discrepancia rol Planificador (RF-003/US-004) vs catálogo 4 roles: resuelta autorizando Administrador + Operador/Técnico, sin crear Planificador.
+- Discrepancia RN-004 (pendiente validación) vs RF-003 (rechazo): prevalece rechazo, sin borradores huérfanos.
+- Documentos `docs/01 Inicio` y `docs/02 Planificación` se mantienen en V_1_0_0, no se modificaron.
+
+## 8. Control de versión
+
+| Versión | Fecha | Descripción | Responsable |
+|---|---|---|---|
+| V_1_0_0 | 2026-10-02 | Informe inicial Sprint 1 US-001 a US-004 | Equipo DistriRapido |
